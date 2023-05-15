@@ -150,43 +150,92 @@ function App() {
                             <div className="mt-1 flex flex-row overflow-scroll">
                                 {(data['敲出止盈类'] as GeneratedType[]).map((item, index) => {
                                     return (
-                                        <div key={index} className="first:ml-0 ml-6 pt-3 px-3 flex-shrink-0 flex flex-col w-[200px] h-[180px] text-xs rounded-3xl bg-white">
-                                            <div>{item.group}</div>
+                                        <div
+                                            key={index}
+                                            className="first:ml-0 ml-6 pt-3 px-3 flex-shrink-0 flex flex-col h-[180px] text-xs rounded-3xl bg-white"
+                                        >
+                                            <div className="text-sm font-normal">{item.group}</div>
                                             {item.noteList.map((i, index) => {
                                                 return (
-                                                    <div className="pt-3 pl-2" key={index}>
+                                                    <div className="pt-3 pl-2 flex flex-row" key={index}>
                                                         {i.message}
+                                                        <div className="ml-4 flex flex-row items-center">
+                                                            {Array(Math.floor(i.star))
+                                                                .fill('$')
+                                                                .map((_, index) => {
+                                                                    return (
+                                                                        <div key={index} className="w-3 h-3">
+                                                                            <Pentagram />
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            {`${i.star}`.includes('.5') && (
+                                                                <div className="relative w-1.5 h-3 overflow-hidden">
+                                                                    <div className="absolute top-0 left-0 w-3 h-3">
+                                                                        <Pentagram />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 );
                                             })}
                                             <div className="mt-4 w-full h-[1px] bg-[#a8a8a8]"></div>
-                                            <div className="pl-2 flex-1 flex flex-row items-center">{item.productList && item.productList[0] && item.productList[0]}</div>
-                                        </div>
-                                    );
-                                })}
-                                {/* <div className="flex-shrink-0 w-[200px] h-[180px] rounded-3xl bg-white"></div>
-                                <div className="ml-6 flex-shrink-0 w-[200px] h-[180px] rounded-3xl bg-white"></div>
-                                <div className="ml-6 flex-shrink-0 w-[200px] h-[180px] rounded-3xl bg-white"></div>
-                                <div className="ml-6 flex-shrink-0 w-[200px] h-[180px] rounded-3xl bg-white"></div> */}
-                            </div>
-                        </div>
-                    )}
-                    <div className="mt-5 pl-2">
-                        <div className="text-xs">净值类</div>
-                        <div className="mt-1 flex flex-row overflow-scroll">
-                            {Array(3)
-                                .fill('$')
-                                .map((_, index) => {
-                                    return (
-                                        <div key={index} className="ml-6 first:ml-0 flex-shrink-0 w-[232px] h-[300px] rounded-3xl bg-white">
-                                            <div className="w-3 h-3">
-                                                <Pentagram />
+                                            <div className="pl-2 flex-1 flex flex-row items-center">
+                                                {item.productList && item.productList[0] && item.productList[0]}
                                             </div>
                                         </div>
                                     );
                                 })}
+                            </div>
                         </div>
-                    </div>
+                    )}
+                    {data && data['净值类'] && (
+                        <div className="mt-5 pl-2">
+                            <div className="text-xs">净值类</div>
+                            <div className="mt-1 flex flex-row overflow-scroll">
+                                {(data['净值类'] as GeneratedType2[]).map((item, index) => {
+                                    return (
+                                        <div key={index} className="ml-6 first:ml-0 py-3 px-3 flex-shrink-0 w-[232px] h-[300px] flex flex-col text-xs rounded-3xl bg-white">
+                                            <div className="text-sm font-normal">{item.group}</div>
+                                            {item.noteList.map((i, index) => {
+                                                return (
+                                                    <div className="pt-3 pl-2 flex flex-row" key={index}>
+                                                        {i.message}
+                                                        <div className="ml-4 flex flex-row items-center">
+                                                            {Array(Math.floor(i.star))
+                                                                .fill('$')
+                                                                .map((_, index) => {
+                                                                    return (
+                                                                        <div key={index} className="w-3 h-3">
+                                                                            <Pentagram />
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            {`${i.star}`.includes('.5') && (
+                                                                <div className="relative w-1.5 h-3 overflow-hidden">
+                                                                    <div className="absolute top-0 left-0 w-3 h-3">
+                                                                        <Pentagram />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                            <div className="mt-4 mb-4 w-full h-[1px] bg-[#a8a8a8]"></div>
+                                            <div className="pl-2 flex-1 flex flex-col gap-3 overflow-scroll">
+                                                {item.productList &&
+                                                    item.productList.map((name) => {
+                                                        return <div key={name}>{name}</div>;
+                                                    })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </>
