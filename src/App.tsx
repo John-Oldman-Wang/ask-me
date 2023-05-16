@@ -70,11 +70,26 @@ function App() {
     const [amount, setAmount] = useState(defaultAmount);
     const [month, setMonth] = useState(defaultMonth);
     const [data, setData] = useState<any | Data>(null);
+    const [amountOffset, setAmountOffset] = useState(0);
+    const [monthOffset, setMonthOffset] = useState(0);
+
+    const targetAmount = amount + amountOffset * maxAmount;
+    const amountDiffArray = amountList.map((item) => (item - targetAmount) * (item - targetAmount));
+    const amountMinOne = Math.min(...amountDiffArray);
+    const amountIndex = amountDiffArray.indexOf(amountMinOne);
+
+    const amountLeft = Math.min(Math.max(targetAmount, amountList[0]), maxAmount) / maxAmount;
+
+    const targetMonth = month + monthOffset * maxMonth;
+    const diffArray = monthList.map((item) => (item - targetMonth) * (item - targetMonth));
+    const monthMinOne = Math.min(...diffArray);
+    const monthIndex = diffArray.indexOf(monthMinOne);
+
+    const monthLeft = Math.min(Math.max(targetMonth, monthList[0]), maxMonth) / maxMonth;
 
     useEffect(() => {
         fetchData(month, amount)
             .then((json) => {
-                console.log(json);
                 setData(json);
             })
             .catch(console.log);
@@ -82,7 +97,7 @@ function App() {
 
     return (
         <>
-            <div className="w-full h-[100vh] px-4 pt-6 font-light bg-[#fef7ec]">
+            <div className="w-full min-h-[100vh] px-4 pt-6 font-light bg-[#fef7ec]">
                 <div className="pl-1 text-sm ">客户有一百万，希望投资一年，哪些产品可以推荐？</div>
                 <div className="h-5 pr-3 flex flex-row items-center justify-stretch mt-3 pl-1 text-sm">
                     <span>投资金额</span>
@@ -100,16 +115,56 @@ function App() {
                                 setAmount(amountList[index + 1]);
                             }
                         }}
+                        data-scope="range"
                         className="relative ml-2 flex-1 flex flex-row items-center"
                     >
-                        <div className="w-full h-2 rounded-full bg-[#e8cab2]"></div>
+                        <div
+                            onTouchStart={(e) => {
+                                const targetEle = e.target as HTMLDivElement;
+                                const rangeEle = targetEle.closest('[data-scope=range]');
+                                const blockEle = rangeEle?.querySelector('[data-scope=range-block]');
+                                const blockEleRect = blockEle?.getBoundingClientRect();
+                                rangeEle?.setAttribute('data-click-block', '0');
+                                if (e.touches.length === 1 && blockEleRect && rangeEle) {
+                                    const touchX = e.touches[0].clientX;
+                                    if (touchX > blockEleRect.left && touchX < blockEleRect.left + blockEleRect.width) {
+                                        rangeEle.setAttribute('data-click-block', '1');
+                                        rangeEle.setAttribute('data-click-x', `${touchX}`);
+                                    }
+                                }
+                            }}
+                            onTouchMove={(e) => {
+                                const targetEle = e.target as HTMLDivElement;
+                                const rangeEle = targetEle.closest('[data-scope=range]');
+                                const rangeEleRect = rangeEle?.getBoundingClientRect();
+                                if (e.touches.length === 1 && rangeEle && rangeEleRect) {
+                                    const isClickBlock = rangeEle.getAttribute('data-click-block') === '1';
+                                    const touchX = rangeEle.getAttribute('data-click-x');
+                                    if (isClickBlock) {
+                                        const touchOffset = e.touches[0].clientX - parseFloat(touchX || '0');
+                                        // todo 限制 max and min
+                                        setAmountOffset(touchOffset / rangeEleRect.width);
+                                    }
+                                }
+                            }}
+                            onTouchEnd={() => {
+                                const targetAmount = amount + amountOffset * maxAmount;
+                                const diffArray = amountList.map((item) => (item - targetAmount) * (item - targetAmount));
+                                const minOne = Math.min(...diffArray);
+                                const index = diffArray.indexOf(minOne);
+                                setAmountOffset(0);
+                                setAmount(amountList[index]);
+                            }}
+                            className="w-full h-2 rounded-full bg-[#e8cab2]"
+                        ></div>
                         <div
                             style={{
-                                left: `${(amount / maxAmount) * 100}%`,
+                                left: `${amountLeft * 100}%`,
                             }}
-                            className="absolute px-1.5 text-xs text-white top-1/2 rounded-[8px] -translate-y-1/2 -translate-x-1/2 bg-[#ba6020]"
+                            data-scope="range-block"
+                            className="absolute z-10 pointer-events-none px-1.5 text-xs text-white top-1/2 rounded-[8px] -translate-y-1/2 -translate-x-1/2 bg-[#ba6020]"
                         >
-                            {amount}w
+                            {amountList[amountIndex]}w
                         </div>
                     </div>
                 </div>
@@ -129,16 +184,58 @@ function App() {
                                 setMonth(monthList[index + 1]);
                             }
                         }}
+                        data-scope="range"
                         className="relative ml-2 flex-1 flex flex-row items-center"
                     >
-                        <div className="w-full h-2 rounded-full bg-[#e8cab2]"></div>
+                        <div
+                            onTouchStart={(e) => {
+                                const targetEle = e.target as HTMLDivElement;
+                                const rangeEle = targetEle.closest('[data-scope=range]');
+                                const blockEle = rangeEle?.querySelector('[data-scope=range-block]');
+                                const blockEleRect = blockEle?.getBoundingClientRect();
+                                rangeEle?.setAttribute('data-click-block', '0');
+                                if (e.touches.length === 1 && blockEleRect && rangeEle) {
+                                    const touchX = e.touches[0].clientX;
+                                    if (touchX > blockEleRect.left && touchX < blockEleRect.left + blockEleRect.width) {
+                                        console.log('click block');
+                                        rangeEle.setAttribute('data-click-block', '1');
+                                        rangeEle.setAttribute('data-click-x', `${touchX}`);
+                                    }
+                                }
+                            }}
+                            onTouchMove={(e) => {
+                                const targetEle = e.target as HTMLDivElement;
+                                const rangeEle = targetEle.closest('[data-scope=range]');
+                                // const blockEle = rangeEle?.querySelector('[data-scope=range-block]');
+                                const rangeEleRect = rangeEle?.getBoundingClientRect();
+                                if (e.touches.length === 1 && rangeEle && rangeEleRect) {
+                                    const isClickBlock = rangeEle.getAttribute('data-click-block') === '1';
+                                    const touchX = rangeEle.getAttribute('data-click-x');
+                                    if (isClickBlock) {
+                                        const touchOffset = e.touches[0].clientX - parseFloat(touchX || '0');
+                                        // todo 限制 max and min
+                                        setMonthOffset(touchOffset / rangeEleRect.width);
+                                    }
+                                }
+                            }}
+                            onTouchEnd={() => {
+                                const targetMonth = month + monthOffset * maxMonth;
+                                const diffArray = monthList.map((item) => (item - targetMonth) * (item - targetMonth));
+                                const monthMinOne = Math.min(...diffArray);
+                                const monthIndex = diffArray.indexOf(monthMinOne);
+                                setMonthOffset(0);
+                                setMonth(monthList[monthIndex]);
+                            }}
+                            className="w-full h-2 rounded-full bg-[#e8cab2]"
+                        ></div>
                         <div
                             style={{
-                                left: `${(month / maxMonth) * 100}%`,
+                                left: `${monthLeft * 100}%`,
                             }}
-                            className="absolute px-1.5 whitespace-nowrap text-xs text-white top-1/2 rounded-[8px] -translate-y-1/2 -translate-x-1/2 bg-[#ba6020]"
+                            data-scope="range-block"
+                            className="absolute pointer-events-none px-1.5 whitespace-nowrap text-xs text-white top-1/2 rounded-[8px] -translate-y-1/2 -translate-x-1/2 bg-[#ba6020]"
                         >
-                            {month}个月
+                            {monthList[monthIndex]}个月
                         </div>
                     </div>
                 </div>
@@ -196,7 +293,10 @@ function App() {
                             <div className="mt-1 flex flex-row overflow-scroll">
                                 {(data['净值类'] as GeneratedType2[]).map((item, index) => {
                                     return (
-                                        <div key={index} className="ml-6 first:ml-0 py-3 px-3 flex-shrink-0 w-[232px] h-[300px] flex flex-col text-xs rounded-3xl bg-white">
+                                        <div
+                                            key={index}
+                                            className="ml-6 first:ml-0 py-3 px-3 flex-shrink-0 w-[232px] h-[300px] flex flex-col text-xs rounded-3xl bg-white"
+                                        >
                                             <div className="text-sm font-normal">{item.group}</div>
                                             {item.noteList.map((i, index) => {
                                                 return (
